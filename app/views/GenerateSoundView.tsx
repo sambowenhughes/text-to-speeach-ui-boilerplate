@@ -1,4 +1,4 @@
-'use client' 
+"use client";
 
 import { GenerateSoundForm } from "@/components/GenerateSoundForm";
 import Loader from "@/components/Loader";
@@ -8,17 +8,16 @@ import { useState } from "react";
  * Represents the request payload for generating sound using a pre-trained model.
  */
 export interface CreateSoundRequest {
-    /**
-     * The URL of the pre-trained model to be used for sound generation.
-     */
-    modelUrl: string;
-  
-    /**
-     * The input text that will be used to generate the sound.
-     */
-    text: string;
-  }
-  
+  /**
+   * The URL of the pre-trained model to be used for sound generation.
+   */
+  modelUrl: string;
+
+  /**
+   * The input text that will be used to generate the sound.
+   */
+  text: string;
+}
 
 /**
  * The main view component for generating sound using a pre-trained model.
@@ -35,7 +34,33 @@ export default function GenerateSoundView() {
   const handleGetAudio = async (request: CreateSoundRequest) => {
     setIsLoading(true);
 
-    alert("Hello")
+    try {
+      const response = await fetch("/api/generate-sound", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          input: request.text,
+          modelUrl: request.modelUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch audio data");
+      }
+
+      const data = await response.arrayBuffer();
+
+      const blob = new Blob([data], { type: "audio/mpeg" });
+      const audioUrl = URL.createObjectURL(blob);
+
+      setAudioUrl(audioUrl);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error)
+      setIsLoading(false);
+    }
   };
 
   return (
